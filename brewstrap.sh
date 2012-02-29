@@ -12,6 +12,7 @@ XCODE_DMG_NAME="xcode_4.1_for_lion.dmg"
 XCODE_SHA="2a67c713ab1ef7a47356ba86445f6e630c674b17"
 XCODE_URL="http://developer.apple.com/downloads/download.action?path=Developer_Tools/xcode_4.1_for_lion/xcode_4.1_for_lion.dmg"
 ORIGINAL_PWD=`pwd`
+GIT_PASSWORD_SCRIPT="/tmp/retrieve_git_password.sh"
 clear
 
 TOTAL=10
@@ -211,42 +212,37 @@ else
   print_step "Chef already installed"
 fi
 
+if [ ! -f ${GIT_PASSWORD_SCRIPT} ]; then
+  echo "grep PASSWORD ~/.brewstraprc | sed s/^.*=//g" > ${GIT_PASSWORD_SCRIPT}
+  chmod 700 ${GIT_PASSWORD_SCRIPT}
+fi
+
+export GIT_ASKPASS=${GIT_PASSWORD_SCRIPT}
+
 if [ ! -d /tmp/chef ]; then
-  CENSORED_REPO=$CHEF_REPO
-  if [ ! -z ${GITHUB_LOGIN} ]; then
-    if [ ! -z ${GITHUB_PASSWORD} ]; then
-      CHEF_REPO=`echo ${CHEF_REPO} | sed -e "s|https://${GITHUB_LOGIN}@|https://${GITHUB_LOGIN}:${GITHUB_PASSWORD}@|"`
-      CENSORED_REPO=`echo ${CHEF_REPO} | sed -e "s|${GITHUB_PASSWORD}|\*\*\*|"`
-    fi
-  fi
-  print_step "Cloning chef repo (${CENSORED_REPO})"
+  print_step "Cloning chef repo (${CHEF_REPO})"
 
   git clone ${CHEF_REPO} /tmp/chef
   if [ ! $? -eq 0 ]; then
     print_error "Unable to clone repo!"
   fi
   print_step "Updating submodules..."
-  if [ -e /tmp/chef/.gitmodules ]; then
-    if [ ! -z ${GITHUB_LOGIN} ]; then
-      if [ ! -z ${GITHUB_PASSWORD} ]; then
-        sed -i -e "s/${GITHUB_LOGIN}@/${GITHUB_LOGIN}:${GITHUB_PASSWORD}@/g" /tmp/chef/.gitmodules
-      fi
-    fi
-  fi
   cd /tmp/chef && git submodule update --init
   if [ ! $? -eq 0 ]; then
     print_error "Unable to update submodules!"
   fi
 else
-  print_step "Updating chef repo (password, if prompted, will be your github account password)"
+  print_step "Updating chef repo"
   if [ -e /tmp/chef/.rvmrc ]; then
     rvm rvmrc trust /tmp/chef/
   fi
   cd /tmp/chef && git pull && git submodule update --init
   if [ ! $? -eq 0 ]; then
-    print_error "Unable to update repo! Bad password?"
+    print_error "Unable to update repo!"
   fi
 fi
+
+unset GIT_ASKPASS
 
 if [ ! -e /tmp/chef/node.json ]; then
   print_error "The chef repo provided has no node.json at the toplevel. This is required to know what to run."
@@ -266,4 +262,7 @@ else
   print_step "BREWSTRAP FINISHED"
 fi
 cd $ORIGINAL_PWD
+
+
 exec bash --login
+
