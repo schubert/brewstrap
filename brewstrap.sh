@@ -263,6 +263,6 @@ else
 fi
 cd $ORIGINAL_PWD
 
-
-exec bash --login
-
+if [ -n "$PS1" ]; then
+  exec bash --login
+fi
