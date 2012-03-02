@@ -219,6 +219,11 @@ fi
 
 export GIT_ASKPASS=${GIT_PASSWORD_SCRIPT}
 
+if [ ! -d /tmp/chef/.git ]; then
+  print_step "Existing git repo bad? Attempting to remove..."
+  rm -rf /tmp/chef    
+fi
+
 if [ ! -d /tmp/chef ]; then
   print_step "Cloning chef repo (${CHEF_REPO})"
 
@@ -232,6 +237,7 @@ if [ ! -d /tmp/chef ]; then
     print_error "Unable to update submodules!"
   fi
 else
+
   print_step "Updating chef repo"
   if [ -e /tmp/chef/.rvmrc ]; then
     rvm rvmrc trust /tmp/chef/
