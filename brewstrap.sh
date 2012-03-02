@@ -6,11 +6,14 @@ BREWSTRAPRC="${HOME}/.brewstraprc"
 HOMEBREW_URL="https://gist.github.com/raw/323731/install_homebrew.rb"
 RVM_URL="https://raw.github.com/wayneeseguin/rvm/master/binscripts/rvm-installer"
 RVM_MIN_VERSION="185"
-RVM_RUBY_VERSION="ruby-1.9.3-p0"
+RVM_RUBY_VERSION="ruby-1.9.3-p125"
 CHEF_MIN_VERSION="0.10.8"
 XCODE_DMG_NAME="xcode_4.1_for_lion.dmg"
 XCODE_SHA="2a67c713ab1ef7a47356ba86445f6e630c674b17"
 XCODE_URL="http://developer.apple.com/downloads/download.action?path=Developer_Tools/xcode_4.1_for_lion/xcode_4.1_for_lion.dmg"
+OSX_GCC_INSTALLER_NAME="GCC-10.7-v2.pkg"
+OSX_GCC_INSTALLER_URL="https://github.com/downloads/kennethreitz/osx-gcc-installer/GCC-10.7-v2.pkg"
+OSX_GCC_INSTALLER_SHA="027a045fc3e34a8839a7b0e40fa2cfb0cc06c652"
 ORIGINAL_PWD=`pwd`
 GIT_PASSWORD_SCRIPT="/tmp/retrieve_git_password.sh"
 clear
@@ -58,6 +61,35 @@ function attempt_to_download_xcode() {
       break;
     else
       echo "Waiting for XCode download to finish..."
+      sleep 30
+    fi
+  done
+}
+
+function attempt_to_download_osx_gcc_installer() {
+  TOTAL=12
+  echo -e "OSX GCC Installer is not installed or downloaded. Downloading now..."
+  echo -e "Brewstrap will continue when the download is complete. Press Ctrl-C to abort."
+  curl -L "${OSX_GCC_INSTALLER_URL}" > /tmp/GCC-10.7-v2.pkg
+  SUCCESS="1"
+  while [ $SUCCESS -eq "1" ]; do
+    if [ -e /tmp/${OSX_GCC_INSTALLER_NAME} ]; then
+      for file in $(ls -c1 /tmp/${OSX_GCC_INSTALLER_NAME}); do
+        echo "Found ${file}. Verifying..."
+        test `shasum /tmp/${OSX_GCC_INSTALLER_NAME} | cut -f 1 -d ' '` = "${OSX_GCC_INSTALLER_SHA}"
+        SUCCESS=$?
+        if [ $SUCCESS -eq "0" ]; then
+          OSX_GCC_INSTALLER=$file
+          break;
+        else
+          echo "${file} failed SHA verification. Incomplete download or corrupted file? Try again?"
+        fi
+      done
+    fi
+    if [ $SUCCESS -eq "0" ]; then
+      break;
+    else
+      echo "Waiting for OSX GCC Installer download to finish..."
       sleep 30
     fi
   done
@@ -121,30 +153,49 @@ else
   print_step "Homebrew already installed"
 fi
 
-if [ ! -d /Developer/Applications/Xcode.app ]; then
-  if [ -e /Applications/Install\ Xcode.app ]; then
-    print_step "Installing Xcode from the App Store..."
-    MPKG_PATH=`find /Applications/Install\ Xcode.app | grep Xcode.mpkg | head -n1`
-    sudo installer -verbose -pkg "${MPKG_PATH}" -target /
-  else
-    print_step "Installing Xcode from DMG..."
-    if [ ! -e ~/Downloads/${XCODE_DMG_NAME} ]; then
-      attempt_to_download_xcode
+
+if [ ! -e /usr/bin/gcc ]; then
+  if [ $XCODE ]; then
+    print_step "There is no GCC available, installing XCode"
+    if [ ! -d /Developer/Applications/Xcode.app ]; then
+      if [ -e /Applications/Install\ Xcode.app ]; then
+        print_step "Installing Xcode from the App Store..."
+        MPKG_PATH=`find /Applications/Install\ Xcode.app | grep Xcode.mpkg | head -n1`
+        sudo installer -verbose -pkg "${MPKG_PATH}" -target /
+      else
+        print_step "Installing Xcode from DMG..."
+        if [ ! -e ~/Downloads/${XCODE_DMG_NAME} ]; then
+          attempt_to_download_xcode
+        else
+          XCODE_DMG=`ls -c1 ~/Downloads/xcode*.dmg | tail -n1`
+        fi
+        if [ ! -e $XCODE_DMG ]; then
+          print_error "Unable to download XCode and it is not installed!"
+        fi
+        cd `dirname $0`
+        mkdir -p /Volumes/Xcode
+        hdiutil attach -mountpoint /Volumes/Xcode $XCODE_DMG
+        MPKG_PATH=`find /Volumes/Xcode | grep .mpkg | head -n1`
+        sudo installer -verbose -pkg "${MPKG_PATH}" -target /
+        hdiutil detach -Force /Volumes/Xcode
+      fi
     else
-      XCODE_DMG=`ls -c1 ~/Downloads/xcode*.dmg | tail -n1`
+      print_step "Xcode already installed"
     fi
-    if [ ! -e $XCODE_DMG ]; then
-      print_error "Unable to download XCode and it is not installed!"
+  else
+    print_step "There is no GCC available, installing the OSX GCC tools. If you want XCode instead, re-run this script with XCODE=true"
+    print_step "Installing OSX GCC Installer from package..."
+    if [ ! -e /tmp/${OSX_GCC_INSTALLER_NAME} ]; then
+      attempt_to_download_osx_gcc_installer
+    else
+      OSX_GCC_INSTALLER=`ls -c1 /tmp/GCC-*.pkg | tail -n1`
+    fi
+    if [ ! -e $OSX_GCC_INSTALLER ]; then
+      print_error "Unable to download OSX GCC Installer and it is not installed!"
     fi
     cd `dirname $0`
-    mkdir -p /Volumes/Xcode
-    hdiutil attach -mountpoint /Volumes/Xcode $XCODE_DMG
-    MPKG_PATH=`find /Volumes/Xcode | grep .mpkg | head -n1`
-    sudo installer -verbose -pkg "${MPKG_PATH}" -target /
-    hdiutil detach -Force /Volumes/Xcode
+    sudo installer -verbose -pkg /tmp/${OSX_GCC_INSTALLER_NAME} -target /
   fi
-else
-    print_step "Xcode already installed"
 fi
 
 GIT_PATH=`which git`
@@ -183,7 +234,16 @@ fi
 rvm list | grep ${RVM_RUBY_VERSION}
 if [ $? -gt 0 ]; then
   print_step "Installing RVM Ruby ${RVM_RUBY_VERSION}"
+  if  [ -e /usr/bin/clang ]; then
+    export CC="clang"
+  else
+    gcc --version | head -n1 | grep llvm >/dev/null
+    if [ $? -eq 0 ]; then
+      export CC="gcc-4.2"
+    fi
+  fi
   rvm install ${RVM_RUBY_VERSION}
+  unset CC
   if [ ! $? -eq 0 ]; then
     print_error "Unable to install RVM ${RVM_RUBY_VERSION}"
   fi
@@ -221,7 +281,7 @@ export GIT_ASKPASS=${GIT_PASSWORD_SCRIPT}
 
 if [ ! -d /tmp/chef/.git ]; then
   print_step "Existing git repo bad? Attempting to remove..."
-  rm -rf /tmp/chef    
+  rm -rf /tmp/chef
 fi
 
 if [ ! -d /tmp/chef ]; then
