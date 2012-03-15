@@ -267,12 +267,7 @@ if [ $RVM ]; then
 else
   if [ ! -d ~/.rvm ]; then
     if [ ! -d /usr/local/rvm ]; then
-      if [ ! -e /usr/local/bin/rbenv ]; then
-        print_step "Found no RVM on the system, installing rbenv by default. If you wish to use RVM instead, please re-run with RVM=true"
-        brew install rbenv
-      else
-        print_step "Found rbenv. Using with ${RBENV_RUBY_VERSION}"
-      fi
+      print_step "Found no RVM on the system, installing rbenv by default. If you wish to use RVM instead, please re-run with RVM=true"
       if [ ! -d ~/.rbenv ]; then
         cd ~/ && git clone git://github.com/sstephenson/rbenv.git .rbenv
       fi
