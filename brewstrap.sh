@@ -3,7 +3,7 @@
 BREWSTRAP_BASE="https://github.com/schubert/brewstrap"
 BREWSTRAP_BIN="${BREWSTRAP_BASE}/raw/master/bin/brewstrap.sh"
 BREWSTRAPRC="${HOME}/.brewstraprc"
-HOMEBREW_URL="https://gist.github.com/raw/323731/install_homebrew.rb"
+HOMEBREW_URL="https://raw.github.com/mxcl/homebrew/master/Library/Contributions/install_homebrew.rb"
 RVM_URL="https://raw.github.com/wayneeseguin/rvm/master/binscripts/rvm-installer"
 RVM_MIN_VERSION="185"
 RBENV_RUBY_VERSION="1.9.3-p125"
