@@ -376,7 +376,7 @@ fi
 if [ ! -e /tmp/chef/solo.rb ]; then
   print_warning "No solo.rb found, writing one..."
   echo "file_cache_path '/tmp/chef-solo-brewstrap'" > /tmp/chef/solo.rb
-  echo "cookbook_path '/tmp/chef/cookbooks'" > /tmp/chef/solo.rb
+  echo "cookbook_path '/tmp/chef/cookbooks'" >> /tmp/chef/solo.rb
 fi
 
 print_step "Kicking off chef-solo (password will be your local user password)"
