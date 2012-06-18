@@ -125,13 +125,6 @@ if [ -z $GITHUB_PASSWORD ]; then
   echo ""
 fi
 
-if [ -z $GITHUB_TOKEN ]; then
-  echo -n "Github Token: "
-  stty echo
-  read GITHUB_TOKEN
-  echo ""
-fi
-
 if [ -z $CHEF_REPO ]; then
   echo -n "Chef Repo (Take the github HTTP URL): "
   stty echo
@@ -143,7 +136,6 @@ stty echo
 rm -f $BREWSTRAPRC
 echo "GITHUB_LOGIN=${GITHUB_LOGIN}" >> $BREWSTRAPRC
 echo "GITHUB_PASSWORD=${GITHUB_PASSWORD}" >> $BREWSTRAPRC
-echo "GITHUB_TOKEN=${GITHUB_TOKEN}" >> $BREWSTRAPRC
 echo "CHEF_REPO=${CHEF_REPO}" >> $BREWSTRAPRC
 chmod 0600 $BREWSTRAPRC
 
@@ -384,7 +376,7 @@ echo $RUBY_RUNNER | grep "&&"
 if [ $? -eq 0 ]; then
   RUBY_RUNNER=""
 fi
-CHEF_COMMAND="GITHUB_PASSWORD=$GITHUB_PASSWORD GITHUB_LOGIN=$GITHUB_LOGIN GITHUB_TOKEN=$GITHUB_TOKEN ${RUBY_RUNNER} chef-solo -j /tmp/chef/node.json -c /tmp/chef/solo.rb"
+CHEF_COMMAND="GITHUB_PASSWORD=$GITHUB_PASSWORD GITHUB_LOGIN=$GITHUB_LOGIN ${RUBY_RUNNER} chef-solo -j /tmp/chef/node.json -c /tmp/chef/solo.rb"
 sudo -E env ${CHEF_COMMAND}
 if [ ! $? -eq 0 ]; then
   print_error "BREWSTRAP FAILED!"
