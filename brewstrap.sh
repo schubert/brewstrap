@@ -405,7 +405,7 @@ if [ -e /tmp/chef/Cheffile ]; then
   fi
   print_step "Kicking off libarian chef"
   LIBRARIAN_COMMAND="${RUBY_RUNNER} librarian-chef install --clean"
-  sudo -E env ${LIBRARIAN_COMMAND}
+  env ${LIBRARIAN_COMMAND}
 fi
 
 print_step "Kicking off chef-solo (password will be your local user password)"
