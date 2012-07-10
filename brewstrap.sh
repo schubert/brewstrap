@@ -335,9 +335,11 @@ fi
 
 export GIT_ASKPASS=${GIT_PASSWORD_SCRIPT}
 
-if [ ! -d /tmp/chef/.git ]; then
-  print_step "Existing git repo bad? Attempting to remove..."
-  rm -rf /tmp/chef
+if [ -d /tmp/chef ]; then
+  if [ ! -d /tmp/chef/.git ]; then
+    print_step "Existing git repo bad? Attempting to remove..."
+    rm -rf /tmp/chef
+  fi
 fi
 
 if [ ! -d /tmp/chef ]; then
