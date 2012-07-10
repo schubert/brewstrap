@@ -9,6 +9,7 @@ RVM_MIN_VERSION="185"
 RBENV_RUBY_VERSION="1.9.3-p125"
 RVM_RUBY_VERSION="ruby-1.9.3-p125"
 CHEF_MIN_VERSION="0.10.8"
+CHEF_LIBRARIAN_MIN_VERSION="0.0.24"
 XCODE_DMG_NAME="xcode_4.1_for_lion.dmg"
 XCODE_SHA="2a67c713ab1ef7a47356ba86445f6e630c674b17"
 XCODE_URL="http://developer.apple.com/downloads/download.action?path=Developer_Tools/xcode_4.1_for_lion/xcode_4.1_for_lion.dmg"
@@ -20,10 +21,10 @@ GIT_PASSWORD_SCRIPT="/tmp/retrieve_git_password.sh"
 RUBY_RUNNER=""
 USING_RVM=0
 USING_RBENV=0
+TOTAL=12
+STEP=1
 clear
 
-TOTAL=10
-STEP=1
 GIT_DEBUG=""
 if [ ! -z ${DEBUG} ]; then
   GIT_DEBUG="--verbose --progress"
@@ -384,6 +385,27 @@ if [ ! -e /tmp/chef/solo.rb ]; then
   print_warning "No solo.rb found, writing one..."
   echo "file_cache_path '/tmp/chef-solo-brewstrap'" > /tmp/chef/solo.rb
   echo "cookbook_path '/tmp/chef/cookbooks'" >> /tmp/chef/solo.rb
+fi
+
+if [ -e /tmp/chef/Cheffile ]; then
+  print_step "Cheffile detected, checking for librarian"
+  ${RUBY_RUNNER} gem specification --version ">=${CHEF_LIBRARIAN_MIN_VERSION}" librarian 2>&1 | awk 'BEGIN { s = 0 } /^name:/ { s = 1; exit }; END { if(s == 0) exit 1 }'
+  if [ $? -gt 0 ]; then
+    print_step "Installing librarian chef gem"
+    ${RUBY_RUNNER} gem install librarian
+    if [ $USING_RBENV -eq 1 ]; then
+      print_step "Rehasing RBEnv for librarian chef"
+      rbenv rehash
+    fi
+    if [ ! $? -eq 0 ]; then
+      print_error "Unable to install librarian chef!"
+    fi
+  else
+    print_step "Librarian Chef already installed"
+  fi
+  print_step "Kicking off libarian chef"
+  LIBRARIAN_COMMAND="${RUBY_RUNNER} librarian-chef install --clean"
+  sudo -E env ${LIBRARIAN_COMMAND}
 fi
 
 print_step "Kicking off chef-solo (password will be your local user password)"
