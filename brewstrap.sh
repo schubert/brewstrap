@@ -404,6 +404,8 @@ if [ -e /tmp/chef/Cheffile ]; then
     print_step "Librarian Chef already installed"
   fi
   print_step "Kicking off libarian chef"
+  BUNDLER_COMMAND="${RUBY_RUNNER} bundle install --without development"
+  env ${BUNDLER_COMMAND}
   LIBRARIAN_COMMAND="${RUBY_RUNNER} librarian-chef install --clean"
   env ${LIBRARIAN_COMMAND}
 fi
