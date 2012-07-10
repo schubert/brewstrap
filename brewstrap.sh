@@ -343,6 +343,9 @@ if [ -d /tmp/chef ]; then
 fi
 
 if [ ! -d /tmp/chef ]; then
+  if [ ! -z ${GITHUB_LOGIN} ]; then
+    CHEF_REPO=`echo ${CHEF_REPO} | sed -e "s|https://github.com|https://${GITHUB_LOGIN}@github.com|"`
+  fi
   print_step "Cloning chef repo (${CHEF_REPO})"
   git clone ${GIT_DEBUG} ${CHEF_REPO} /tmp/chef
 
@@ -350,6 +353,11 @@ if [ ! -d /tmp/chef ]; then
     print_error "Unable to clone repo!"
   fi
   print_step "Updating submodules..."
+  if [ -e /tmp/chef/.gitmodules ]; then
+    if [ ! -z ${GITHUB_LOGIN} ]; then
+      sed -i -e "s|https://github.com|https://${GITHUB_LOGIN}@github.com|" /tmp/chef/.gitmodules
+    fi
+  fi
   cd /tmp/chef && git submodule update --init
   if [ ! $? -eq 0 ]; then
     print_error "Unable to update submodules!"
