@@ -24,6 +24,11 @@ clear
 
 TOTAL=10
 STEP=1
+GIT_DEBUG=""
+if [ ! -z ${DEBUG} ]; then
+  GIT_DEBUG="--verbose --progress"
+fi
+
 function print_step() {
   echo -e "\033[1m($(( STEP++ ))/${TOTAL}) ${1}\033[0m\n"
 }
@@ -261,7 +266,7 @@ else
     if [ ! -d /usr/local/rvm ]; then
       print_step "Found no RVM on the system, installing rbenv by default. If you wish to use RVM instead, please re-run with RVM=true"
       if [ ! -d ~/.rbenv ]; then
-        cd ~/ && git clone git://github.com/sstephenson/rbenv.git .rbenv
+        cd ~/ && git clone ${GIT_DEBUG} git://github.com/sstephenson/rbenv.git .rbenv
       fi
       unset GEM_PATH
       unset GEM_HOME
@@ -276,7 +281,7 @@ else
       fi
       export PATH=$HOME/.rbenv/bin:$PATH
       if [ ! -d ~/.rbenv/plugins/ruby-build ]; then
-        mkdir -p ~/.rbenv/plugins && cd ~/.rbenv/plugins && git clone git://github.com/sstephenson/ruby-build.git
+        mkdir -p ~/.rbenv/plugins && cd ~/.rbenv/plugins && git clone $GIT_DEBUG git://github.com/sstephenson/ruby-build.git
       fi
       if [ -e /usr/local/bin/rbenv-install ]; then
         brew uninstall ruby-build
@@ -337,8 +342,8 @@ fi
 
 if [ ! -d /tmp/chef ]; then
   print_step "Cloning chef repo (${CHEF_REPO})"
+  git clone ${GIT_DEBUG} ${CHEF_REPO} /tmp/chef
 
-  git clone ${CHEF_REPO} /tmp/chef
   if [ ! $? -eq 0 ]; then
     print_error "Unable to clone repo!"
   fi
