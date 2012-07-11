@@ -364,14 +364,17 @@ if [ ! -d /tmp/chef ]; then
     print_error "Unable to update submodules!"
   fi
 else
-
-  print_step "Updating chef repo"
-  if [ -e /tmp/chef/.rvmrc ]; then
-    rvm rvmrc trust /tmp/chef/
-  fi
-  cd /tmp/chef && git pull && git submodule update --init
-  if [ ! $? -eq 0 ]; then
-    print_error "Unable to update repo!"
+  if [ -z ${LOCAL} ]; then
+    print_step "Updating chef repo"
+    if [ -e /tmp/chef/.rvmrc ]; then
+      rvm rvmrc trust /tmp/chef/
+    fi
+    cd /tmp/chef && git pull && git submodule update --init
+    if [ ! $? -eq 0 ]; then
+      print_error "Unable to update repo!"
+    fi
+  else
+    print_step "Using local chef repo"
   fi
 fi
 
