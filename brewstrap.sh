@@ -272,7 +272,7 @@ else
       unset GEM_PATH
       unset GEM_HOME
       unset MY_RUBY_HOME
-      (echo $PATH | grep "rbenv") || (cat ~/.bash_profile | grep PATH | grep rbenv)
+      (echo $PATH | grep "rbenv") || (test -e ~/.bash_profile  && cat ~/.bash_profile | grep PATH | grep rbenv) || false
       if [ $? -eq 1 ]; then
         echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bash_profile
       fi
@@ -290,6 +290,11 @@ else
       gcc --version | head -n1 | grep llvm >/dev/null
       if [ $? -eq 0 ]; then
         export CC="gcc-4.2"
+      fi
+      which rbenv
+      if [ $? -eq 1 ]; then
+        print_error "Unable to find rbenv in ${PATH} !"
+        exit 1
       fi
       rbenv versions | grep ${RBENV_RUBY_VERSION}
       if [ ! $? -eq 0 ]; then
