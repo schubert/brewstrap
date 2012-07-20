@@ -423,7 +423,14 @@ echo $RUBY_RUNNER | grep "&&"
 if [ $? -eq 0 ]; then
   RUBY_RUNNER=""
 fi
-CHEF_COMMAND="GITHUB_PASSWORD=$GITHUB_PASSWORD GITHUB_LOGIN=$GITHUB_LOGIN ${RUBY_RUNNER} chef-solo -j /tmp/chef/node.json -c /tmp/chef/solo.rb"
+
+CHEF_DEBUG=""
+if [ ! -z ${DEBUG} ]; then
+  CHEF_DEBUG="-l debug"
+fi
+
+CHEF_COMMAND="GITHUB_PASSWORD=$GITHUB_PASSWORD GITHUB_LOGIN=$GITHUB_LOGIN ${RUBY_RUNNER} chef-solo -j /tmp/chef/node.json -c /tmp/chef/solo.rb ${CHEF_DEBUG}"
+echo $CHEF_COMMAND
 sudo -E env ${CHEF_COMMAND}
 if [ ! $? -eq 0 ]; then
   print_error "BREWSTRAP FAILED!"
