@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Brewstrap by schubert</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Brewstrap</h1>
+        <p>Homebrew + RVM + Chef Soloist</p>
+
+        <p class="view"><a href="https://github.com/schubert/brewstrap">View the Project on GitHub <small>schubert/brewstrap</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/schubert/brewstrap/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/schubert/brewstrap/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/schubert/brewstrap">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>Brewstrap</h1>
+
+<p>OSX Homebrew + rbenv/RVM + Chef Solo</p>
+
+<p>To make it easier to automate the setup of OSX on a development team or across multiple personal machines. This script attempts to install XCode if it is not already installed. Installs homebrew. Then using your github credentials attempts to kick off a chef-solo run of a repository of your choosing. </p>
+
+<p>You can see an example repository here: <a href="https://github.com/schubert/brewstrap-example">https://github.com/schubert/brewstrap-example</a></p>
+
+<h3>Running</h3>
+
+<pre><code>curl -L http://git.io/PvkgGw &gt; /tmp/$USER-brewstrap.sh &amp;&amp; bash /tmp/$USER-brewstrap.sh
+</code></pre>
+
+<h3>Options (set before running)</h3>
+
+<pre><code>export DEBUG=true # Enable verbose messaging for git, chef librarian and chef-solo
+export RVM=true # Use/install RVM instead of rbenv
+export XCODE=true # Attempt to install Xcode from ADC instead of installing Xcode CLI tools
+</code></pre>
+
+<p>It is recommended now that you just install Xcode through the app store. Apple has not made it easy
+to automatically install Xcode anymore and many homebrew packages will not work with the CLI package.</p>
+
+<p>If a solo.rb file is not present in your repo brewstrap will write one out
+expecting cookbooks only to be in the "cookbooks" folder. If you have additional
+folders you wish to include (for example site-cookbooks if you are using
+Librarian Chef) then check in your own solo.rb:</p>
+
+<pre><code>base_dir = File.expand_path(File.dirname(__FILE__))
+file_cache_path File.join(base_dir, "tmp", "cache")
+cookbook_path File.join(base_dir, "cookbooks"), File.join(base_dir, "site-cookbooks")
+</code></pre>
+
+<p>If a Cheffile from Librarian Chef is present, brewstrap will install the
+librarian-chef gem and then attempt to run "librarian-chef install" before
+launching chef solo.</p>
+
+<p>The details of your github credentials are written out to a file: ~/.brewstraprc.
+In the future this will be stored in the OSX keychain and multiple chef repositories
+will be supported so you can layer a personal repository ontop of a team repository.</p>
+
+<ul>
+<li>Homebrew: <a href="https://github.com/mxcl/homebrew">https://github.com/mxcl/homebrew</a>
+</li>
+<li>RVM: <a href="http://rvm.beginrescueend.com/">http://rvm.beginrescueend.com/</a>
+</li>
+<li>Chef: <a href="http://wiki.opscode.com/display/chef/Resources">http://wiki.opscode.com/display/chef/Resources</a>
+</li>
+<li>Librarian Chef: <a href="https://github.com/applicationsonline/librarian">https://github.com/applicationsonline/librarian</a>
+</li>
+</ul><h3>History</h3>
+
+<p>I have multiple machines at home and I get a new laptop every 2 years. Going through and setting things up everytime is a hassle. I could do migrations but I like to use the upgrade as an excuse to clear out any cruft that I may no longer be using.</p>
+
+<h3>Legal</h3>
+
+<p>Chef and chef-solo are © 2010 Opscode (<a href="http://www.opscode.com/">http://www.opscode.com/</a>)</p>
+
+<h3>License</h3>
+
+<p>MIT</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/schubert">schubert</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
