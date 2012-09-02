@@ -3,6 +3,7 @@
 BREWSTRAP_BASE="https://github.com/schubert/brewstrap"
 BREWSTRAP_BIN="${BREWSTRAP_BASE}/raw/master/bin/brewstrap.sh"
 BREWSTRAPRC="${HOME}/.brewstraprc"
+WORK_DIR="/tmp/${USER}-brewstrap"
 HOMEBREW_URL="https://raw.github.com/mxcl/homebrew/master/Library/Contributions/install_homebrew.rb"
 RVM_URL="https://raw.github.com/wayneeseguin/rvm/master/binscripts/rvm-installer"
 RVM_MIN_VERSION="185"
@@ -17,7 +18,7 @@ OSX_GCC_INSTALLER_NAME="GCC-10.7-v2.pkg"
 OSX_GCC_INSTALLER_URL="https://github.com/downloads/kennethreitz/osx-gcc-installer/GCC-10.7-v2.pkg"
 OSX_GCC_INSTALLER_SHA="027a045fc3e34a8839a7b0e40fa2cfb0cc06c652"
 ORIGINAL_PWD=`pwd`
-GIT_PASSWORD_SCRIPT="/tmp/retrieve_git_password.sh"
+GIT_PASSWORD_SCRIPT="${WORK_DIR}/retrieve_git_password.sh"
 RUBY_RUNNER=""
 USING_RVM=0
 USING_RBENV=0
@@ -80,13 +81,13 @@ function attempt_to_download_osx_gcc_installer() {
   TOTAL=12
   echo -e "OSX GCC Installer is not installed or downloaded. Downloading now..."
   echo -e "Brewstrap will continue when the download is complete. Press Ctrl-C to abort."
-  curl -L "${OSX_GCC_INSTALLER_URL}" > /tmp/GCC-10.7-v2.pkg
+  curl -L "${OSX_GCC_INSTALLER_URL}" > ${WORK_DIR}/GCC-10.7-v2.pkg
   SUCCESS="1"
   while [ $SUCCESS -eq "1" ]; do
-    if [ -e /tmp/${OSX_GCC_INSTALLER_NAME} ]; then
-      for file in $(ls -c1 /tmp/${OSX_GCC_INSTALLER_NAME}); do
+    if [ -e ${WORK_DIR}/${OSX_GCC_INSTALLER_NAME} ]; then
+      for file in $(ls -c1 ${WORK_DIR}/${OSX_GCC_INSTALLER_NAME}); do
         echo "Found ${file}. Verifying..."
-        test `shasum /tmp/${OSX_GCC_INSTALLER_NAME} | cut -f 1 -d ' '` = "${OSX_GCC_INSTALLER_SHA}"
+        test `shasum ${WORK_DIR}/${OSX_GCC_INSTALLER_NAME} | cut -f 1 -d ' '` = "${OSX_GCC_INSTALLER_SHA}"
         SUCCESS=$?
         if [ $SUCCESS -eq "0" ]; then
           OSX_GCC_INSTALLER=$file
@@ -119,6 +120,14 @@ echo -e "You will need your github credentials so now might be a good time to lo
 if [ -e .rvmrc ]; then
   print_error "Do not run brewstrap from within a directory with an existing .rvmrc!\nIt causes the wrong environment to load."
 fi
+
+if [ ! -d $WORK_DIR ]; then
+  mkdir -p $WORK_DIR
+fi
+if [ ! -x $WORK_DIR ]; then
+  print_error "Unable to access ${WORK_DIR}! Permissions problem?"
+fi
+
 
 print_step "Collecting information.."
 if [ -z $GITHUB_LOGIN ]; then
@@ -191,16 +200,16 @@ if [ ! -e /usr/bin/gcc ]; then
   else
     print_step "There is no GCC available, installing the OSX GCC tools. If you want XCode instead, re-run this script with XCODE=true"
     print_step "Installing OSX GCC Installer from package..."
-    if [ ! -e /tmp/${OSX_GCC_INSTALLER_NAME} ]; then
+    if [ ! -e ${WORK_DIR}/${OSX_GCC_INSTALLER_NAME} ]; then
       attempt_to_download_osx_gcc_installer
     else
-      OSX_GCC_INSTALLER=`ls -c1 /tmp/GCC-*.pkg | tail -n1`
+      OSX_GCC_INSTALLER=`ls -c1 ${WORK_DIR}/GCC-*.pkg | tail -n1`
     fi
     if [ ! -e $OSX_GCC_INSTALLER ]; then
       print_error "Unable to download OSX GCC Installer and it is not installed!"
     fi
     cd `dirname $0`
-    sudo installer -verbose -pkg /tmp/${OSX_GCC_INSTALLER_NAME} -target /
+    sudo installer -verbose -pkg ${WORK_DIR}/${OSX_GCC_INSTALLER_NAME} -target /
   fi
 fi
 
@@ -345,40 +354,40 @@ fi
 
 export GIT_ASKPASS=${GIT_PASSWORD_SCRIPT}
 
-if [ -d /tmp/chef ]; then
-  if [ ! -d /tmp/chef/.git ]; then
+if [ -d ${WORK_DIR}/chef ]; then
+  if [ ! -d ${WORK_DIR}/chef/.git ]; then
     print_step "Existing git repo bad? Attempting to remove..."
-    rm -rf /tmp/chef
+    rm -rf ${WORK_DIR}/chef
   fi
 fi
 
-if [ ! -d /tmp/chef ]; then
+if [ ! -d ${WORK_DIR}/chef ]; then
   if [ ! -z ${GITHUB_LOGIN} ]; then
     CHEF_REPO=`echo ${CHEF_REPO} | sed -e "s|https://github.com|https://${GITHUB_LOGIN}@github.com|"`
   fi
   print_step "Cloning chef repo (${CHEF_REPO})"
-  git clone ${GIT_DEBUG} ${CHEF_REPO} /tmp/chef
+  git clone ${GIT_DEBUG} ${CHEF_REPO} ${WORK_DIR}/chef
 
   if [ ! $? -eq 0 ]; then
     print_error "Unable to clone repo!"
   fi
   print_step "Updating submodules..."
-  if [ -e /tmp/chef/.gitmodules ]; then
+  if [ -e ${WORK_DIR}/chef/.gitmodules ]; then
     if [ ! -z ${GITHUB_LOGIN} ]; then
-      sed -i -e "s|https://github.com|https://${GITHUB_LOGIN}@github.com|" /tmp/chef/.gitmodules
+      sed -i -e "s|https://github.com|https://${GITHUB_LOGIN}@github.com|" ${WORK_DIR}/chef/.gitmodules
     fi
   fi
-  cd /tmp/chef && git submodule update --init
+  cd ${WORK_DIR}/chef && git submodule update --init
   if [ ! $? -eq 0 ]; then
     print_error "Unable to update submodules!"
   fi
 else
   if [ -z ${LOCAL} ]; then
     print_step "Updating chef repo"
-    if [ -e /tmp/chef/.rvmrc ]; then
-      rvm rvmrc trust /tmp/chef/
+    if [ -e ${WORK_DIR}/chef/.rvmrc ]; then
+      rvm rvmrc trust ${WORK_DIR}/chef/
     fi
-    cd /tmp/chef && git pull && git submodule update --init
+    cd ${WORK_DIR}/chef && git pull && git submodule update --init
     if [ ! $? -eq 0 ]; then
       print_error "Unable to update repo!"
     fi
@@ -389,17 +398,17 @@ fi
 
 unset GIT_ASKPASS
 
-if [ ! -e /tmp/chef/node.json ]; then
+if [ ! -e ${WORK_DIR}/chef/node.json ]; then
   print_error "The chef repo provided has no node.json at the toplevel. This is required to know what to run."
 fi
 
-if [ ! -e /tmp/chef/solo.rb ]; then
+if [ ! -e ${WORK_DIR}/chef/solo.rb ]; then
   print_warning "No solo.rb found, writing one..."
-  echo "file_cache_path '/tmp/chef-solo-brewstrap'" > /tmp/chef/solo.rb
-  echo "cookbook_path '/tmp/chef/cookbooks'" >> /tmp/chef/solo.rb
+  echo "file_cache_path '${WORK_DIR}/chef-solo-brewstrap'" > ${WORK_DIR}/chef/solo.rb
+  echo "cookbook_path '${WORK_DIR}/chef/cookbooks'" >> ${WORK_DIR}/chef/solo.rb
 fi
 
-if [ -e /tmp/chef/Cheffile ]; then
+if [ -e ${WORK_DIR}/chef/Cheffile ]; then
   print_step "Cheffile detected, checking for librarian"
   ${RUBY_RUNNER} gem specification --version ">=${CHEF_LIBRARIAN_MIN_VERSION}" librarian 2>&1 | awk 'BEGIN { s = 0 } /^name:/ { s = 1; exit }; END { if(s == 0) exit 1 }'
   if [ $? -gt 0 ]; then
@@ -433,7 +442,7 @@ if [ ! -z ${DEBUG} ]; then
   CHEF_DEBUG="-l debug"
 fi
 
-CHEF_COMMAND="GITHUB_PASSWORD=$GITHUB_PASSWORD GITHUB_LOGIN=$GITHUB_LOGIN ${RUBY_RUNNER} chef-solo -j /tmp/chef/node.json -c /tmp/chef/solo.rb ${CHEF_DEBUG}"
+CHEF_COMMAND="GITHUB_PASSWORD=$GITHUB_PASSWORD GITHUB_LOGIN=$GITHUB_LOGIN ${RUBY_RUNNER} chef-solo -j ${WORK_DIR}/chef/node.json -c ${WORK_DIR}/chef/solo.rb ${CHEF_DEBUG}"
 echo $CHEF_COMMAND
 sudo -E env ${CHEF_COMMAND}
 if [ ! $? -eq 0 ]; then
