@@ -128,6 +128,10 @@ if [ ! -x $WORK_DIR ]; then
   print_error "Unable to access ${WORK_DIR}! Permissions problem?"
 fi
 
+if [ -d /tmp/chef ]; then
+  print_step "Found old brewstrap directory, removing and symlinking to ${WORK_DIR}/chef"
+  rm -rf /tmp/chef && ln -s ${WORK_DIR}/chef /tmp/chef
+fi
 
 print_step "Collecting information.."
 if [ -z $GITHUB_LOGIN ]; then
