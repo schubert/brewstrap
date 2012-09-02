@@ -116,6 +116,10 @@ echo -e "You will need your github credentials so now might be a good time to lo
 
 [[ -s "$BREWSTRAPRC" ]] && source "$BREWSTRAPRC"
 
+if [ -e .rvmrc ]; then
+  print_error "Do not run brewstrap from within a directory with an existing .rvmrc!\nIt causes the wrong environment to load."
+fi
+
 print_step "Collecting information.."
 if [ -z $GITHUB_LOGIN ]; then
   echo -n "Github Username: "
