@@ -445,7 +445,9 @@ if [ ! -z ${DEBUG} ]; then
 fi
 
 CHEF_COMMAND="GITHUB_PASSWORD=$GITHUB_PASSWORD GITHUB_LOGIN=$GITHUB_LOGIN ${RUBY_RUNNER} chef-solo -j ${WORK_DIR}/chef/node.json -c ${WORK_DIR}/chef/solo.rb ${CHEF_DEBUG}"
-echo $CHEF_COMMAND
+if [ ! -z ${DEBUG} ]; then
+  echo $CHEF_COMMAND
+fi
 sudo -E env ${CHEF_COMMAND}
 if [ ! $? -eq 0 ]; then
   print_error "BREWSTRAP FAILED!"
