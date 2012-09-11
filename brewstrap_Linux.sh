@@ -13,7 +13,7 @@ GIT_PASSWORD_SCRIPT="${WORK_DIR}/retrieve_git_password.sh"
 RUBY_RUNNER=""
 USING_RVM=0
 USING_RBENV=0
-TOTAL=12
+TOTAL=10
 STEP=1
 clear
 
@@ -93,13 +93,17 @@ chmod 0600 $BREWSTRAPRC
 
 GCC_BIN=`which gcc`
 if [ $? != 0 ]; then
-    print_error "There is no GCC available. Please install before continuing."
-    exit 1
+  print_error "There is no GCC available. Please install before continuing."
+  exit 1
+else
+  print_step "GCC is already installed"
 fi
 
 GIT_PATH=`which git`
 if [ $? != 0 ]; then
   print_error "There is no git available. Please install before continuing."
+else
+  print_step "git is already installed"
 fi
 
 if [ $RVM ]; then
