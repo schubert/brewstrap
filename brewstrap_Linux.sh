@@ -213,7 +213,7 @@ if [ $? -gt 0 ]; then
   print_step "Installing chef gem"
   ${RUBY_RUNNER} gem install chef
   if [ $USING_RBENV -eq 1 ]; then
-    print_step "Rehasing RBEnv for chef"
+    print_step "Rehashing RBEnv for chef"
     rbenv rehash
   fi
   if [ ! $? -eq 0 ]; then
