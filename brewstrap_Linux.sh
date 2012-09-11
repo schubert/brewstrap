@@ -13,7 +13,7 @@ GIT_PASSWORD_SCRIPT="${WORK_DIR}/retrieve_git_password.sh"
 RUBY_RUNNER=""
 USING_RVM=0
 USING_RBENV=0
-TOTAL=10
+TOTAL=11
 STEP=1
 clear
 
@@ -97,6 +97,14 @@ if [ $? != 0 ]; then
   exit 1
 else
   print_step "GCC is already installed"
+fi
+
+MAKE_BIN=`which make`
+if [ $? != 0 ]; then
+  print_error "There is no make available. Please install before continuing."
+  exit 1
+else
+  print_step "make is already installed"
 fi
 
 GIT_PATH=`which git`
