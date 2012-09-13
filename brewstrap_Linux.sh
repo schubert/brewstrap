@@ -300,6 +300,18 @@ if [ -e ${WORK_DIR}/chef/Cheffile ]; then
   else
     print_step "Librarian Chef already installed"
   fi
+  if [ -e ${WORK_DIR}/chef/Gemfile ]; then
+    print_step "Installing bundler gem"
+    ${RUBY_RUNNER} gem install bundler
+    if [ $USING_RBENV -eq 1 ]; then
+      print_step "Rehasing RBEnv for bundler"
+      rbenv rehash
+    fi
+    if [ ! $? -eq 0 ]; then
+      print_error "Unable to install bundler!"
+    fi
+    print_step "Bundler already installed"
+  fi
   print_step "Kicking off libarian chef"
   BUNDLER_COMMAND="${RUBY_RUNNER} bundle install --without development"
   env ${BUNDLER_COMMAND}
