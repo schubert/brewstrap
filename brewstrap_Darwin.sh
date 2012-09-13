@@ -20,7 +20,7 @@ GIT_PASSWORD_SCRIPT="${WORK_DIR}/retrieve_git_password.sh"
 RUBY_RUNNER=""
 USING_RVM=0
 USING_RBENV=0
-TOTAL=12
+TOTAL=14
 STEP=1
 clear
 
