@@ -2,7 +2,7 @@
 
 BREWSTRAPRC="${HOME}/.brewstraprc"
 WORK_DIR="/tmp/${USER}-brewstrap"
-HOMEBREW_URL="https://raw.github.com/mxcl/homebrew/master/Library/Contributions/install_homebrew.rb"
+HOMEBREW_URL="http://raw.github.com/mxcl/homebrew/go"
 RVM_URL="https://raw.github.com/wayneeseguin/rvm/master/binscripts/rvm-installer"
 RVM_MIN_VERSION="185"
 RBENV_RUBY_VERSION="1.9.3-p125"
@@ -162,14 +162,17 @@ chmod 0600 $BREWSTRAPRC
 
 if [ ! -e /usr/local/bin/brew ]; then
   print_step "Installing homebrew"
-  ruby -e "$(curl -fsSL ${HOMEBREW_URL})"
+  ruby -e "$(curl -fsSkL ${HOMEBREW_URL})"
   if [ ! $? -eq 0 ]; then
+    print_error "Unable to install homebrew!"
+  fi
+  # Double check to make sure it really got installed in case the URL changes again
+  if [ ! -e /usr/local/bin/brew ]; then
     print_error "Unable to install homebrew!"
   fi
 else
   print_step "Homebrew already installed"
 fi
-
 
 if [ ! -e /usr/bin/gcc ]; then
   if [ $XCODE ]; then
