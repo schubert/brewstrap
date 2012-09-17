@@ -211,7 +211,7 @@ fi
 ${RUBY_RUNNER} gem specification --version ">=${CHEF_MIN_VERSION}" chef 2>&1 | awk 'BEGIN { s = 0 } /^name:/ { s = 1; exit }; END { if(s == 0) exit 1 }'
 if [ $? -gt 0 ]; then
   print_step "Installing chef gem"
-  ${RUBY_RUNNER} gem install chef
+  ${RUBY_RUNNER} gem install chef --version "${CHEF_MIN_VERSION}"
   if [ $USING_RBENV -eq 1 ]; then
     print_step "Rehashing RBEnv for chef"
     rbenv rehash
