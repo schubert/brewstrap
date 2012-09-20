@@ -18,6 +18,7 @@ OSX_GCC_INSTALLER_SHA="027a045fc3e34a8839a7b0e40fa2cfb0cc06c652"
 ORIGINAL_PWD=`pwd`
 GIT_PASSWORD_SCRIPT="${WORK_DIR}/retrieve_git_password.sh"
 RUBY_RUNNER=""
+RUBY_GEM_OPTIONS="--no-ri --no-rdoc"
 USING_RVM=0
 USING_RBENV=0
 TOTAL=14
@@ -340,7 +341,7 @@ fi
 ${RUBY_RUNNER} gem specification --version ">=${CHEF_MIN_VERSION}" chef 2>&1 | awk 'BEGIN { s = 0 } /^name:/ { s = 1; exit }; END { if(s == 0) exit 1 }'
 if [ $? -gt 0 ]; then
   print_step "Installing chef gem"
-  ${RUBY_RUNNER} gem install chef --version "${CHEF_MIN_VERSION}"
+  ${RUBY_RUNNER} gem install chef --version "${CHEF_MIN_VERSION}" ${RUBY_GEM_OPTIONS}
   if [ $USING_RBENV -eq 1 ]; then
     print_step "Rehashing RBEnv for chef"
     rbenv rehash
@@ -418,7 +419,7 @@ if [ -e ${WORK_DIR}/chef/Cheffile ]; then
   ${RUBY_RUNNER} gem specification --version ">=${CHEF_LIBRARIAN_MIN_VERSION}" librarian 2>&1 | awk 'BEGIN { s = 0 } /^name:/ { s = 1; exit }; END { if(s == 0) exit 1 }'
   if [ $? -gt 0 ]; then
     print_step "Installing librarian chef gem"
-    ${RUBY_RUNNER} gem install librarian
+    ${RUBY_RUNNER} gem install librarian ${RUBY_GEM_OPTIONS}
     if [ $USING_RBENV -eq 1 ]; then
       print_step "Rehasing RBEnv for librarian chef"
       rbenv rehash
@@ -431,7 +432,7 @@ if [ -e ${WORK_DIR}/chef/Cheffile ]; then
   fi
   if [ -e ${WORK_DIR}/chef/Gemfile ]; then
     print_step "Installing bundler gem"
-    ${RUBY_RUNNER} gem install bundler
+    ${RUBY_RUNNER} gem install bundler ${RUBY_GEM_OPTIONS}
     if [ $USING_RBENV -eq 1 ]; then
       print_step "Rehasing RBEnv for bundler"
       rbenv rehash
